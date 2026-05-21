@@ -4,6 +4,28 @@ import { CheckCircle2, FolderPlus, LogOut, Plus, RefreshCw, UserPlus } from 'luc
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:8080' : '');
 const statuses = ['TODO', 'IN_PROGRESS', 'DONE'];
 
+function readStoredAuth() {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    return JSON.parse(localStorage.getItem('auth') || 'null');
+  } catch {
+    localStorage.removeItem('auth');
+    return null;
+  }
+}
+
+function writeStoredAuth(data) {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('auth', JSON.stringify(data));
+  }
+}
+
+function clearStoredAuth() {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('auth');
+  }
+}
+
 function request(path, options = {}, token) {
   return fetch(`${API_URL}${path}`, {
     ...options,
@@ -20,7 +42,7 @@ function request(path, options = {}, token) {
 }
 
 export default function App() {
-  const [auth, setAuth] = useState(() => JSON.parse(localStorage.getItem('auth') || 'null'));
+  const [auth, setAuth] = useState(readStoredAuth);
   const [mode, setMode] = useState('login');
   const [message, setMessage] = useState('');
   const [stats, setStats] = useState(null);
@@ -51,13 +73,13 @@ export default function App() {
   }, [token]);
 
   function saveAuth(data) {
-    localStorage.setItem('auth', JSON.stringify(data));
+    writeStoredAuth(data);
     setAuth(data);
     setMessage('');
   }
 
   function logout() {
-    localStorage.removeItem('auth');
+    clearStoredAuth();
     setAuth(null);
     setStats(null);
     setProjects([]);
